@@ -126,8 +126,8 @@ def run_inference(date):
         'num_layers': 2,
         'dim_feedforward': 256
     }
-    model = load_model("saved_models/20241215_190811/best_model_16.pth", model_config)
-    df = pd.read_csv('data/proc/nvda_may_dec.csv')
+    model = load_model(config['MODEL_PATH'], model_config)
+    df = pd.read_csv(config['DATA_PATH'])
     df = df.sort_values('Date').reset_index(drop=True)
     
     train_size = int(0.9 * len(df))

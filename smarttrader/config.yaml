@@ -1,1 +1,3 @@
 SEQ_LENGTH: 14
+MODEL_PATH: "saved_models/20241216_125225/best_model_17.pth"
+DATA_PATH: "data/proc/nvda_may_dec.csv"
