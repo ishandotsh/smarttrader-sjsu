@@ -1,4 +1,0 @@
-Nov-28
-Ishan
-Built starter ui + tested dataset + trial of LSTM (failed)
-

@@ -1,60 +1,69 @@
 import gradio as gr
+import pandas as pd
 from datetime import datetime
-from inference import predict_stocks
+from inference import run_inference
+from strategy import strategy
 
 df_css = """
 table { overflow: hidden;}
 """
 
-def build_ui():
-    with gr.Blocks(title="SmartTrader - Stock Market Prediction", css=df_css) as demo:
-        gr.Markdown("# SmartTrader: NVDA & NVDQ Trading Assistant")
-        gr.Markdown("### Predict stock prices and get trading recommendations")
-        
-        with gr.Row():
-            date_input = gr.Textbox(
-                label="Select Date (YYYY-MM-DD)",
-                value=datetime.now().strftime('%Y-%m-%d')
-            )
-            predict_btn = gr.Button("Predict")
-        
-        with gr.Row():
-            plot_output = gr.Plot(label="Stock Analysis")
-        
-        with gr.Row():
-            table_output = gr.Dataframe(
-                headers=["Date", "Open", "High", "Low", "Close", "Action"],
-                label="Predictions and Trading Recommendations for $NVDA",
-                wrap=True,
-                row_count=(5, "fixed"),
-                col_count=(6, "fixed"),
-                elem_classes=["df"],
-            )
-        
-        predict_btn.click(
-            predict_stocks,
-            inputs=[date_input],
-            outputs=[plot_output, table_output]
+def process_and_display(date):
+    predictions = run_inference(date)
+    print(predictions)
+    # highest_price = predictions.max().max()
+    # lowest_price = predictions.min().min()
+    # avg_close_price = predictions['Close'].mean()
+    highest_price = predictions['High'].max()
+    lowest_price = predictions['Low'].min()
+    avg_close_price = predictions['Close'].mean()
+    
+    strategy_df = strategy(predictions)
+    # print(strategy_df)
+    
+    stats_df = pd.DataFrame({
+        'Metric': ['Highest Price', 'Lowest Price', 'Avg Close Price'],
+        'Value': [f'${highest_price:.2f}', f'${lowest_price:.2f}', f'${avg_close_price:.2f}']
+    })
+    # print(strategy_df)
+    strategy_df['Date'] = strategy_df['Date'].apply(lambda x: x.strftime('%m-%d-%Y'))
+    strategy_df.set_index('Date', inplace=True)
+    return stats_df.values.tolist(), strategy_df.reset_index().values.tolist()
+
+# Create the Gradio interface
+with gr.Blocks(title="SmartTrader", css=df_css) as demo:
+    gr.Markdown("# Stock Price Prediction and Trading Strategy")
+    
+    with gr.Row():
+        date_input = gr.Textbox(
+            label="Date",
+            value=datetime.today().strftime('%Y-%m-%d'),
+            placeholder="YYYY-MM-DD"
         )
+        submit_btn = gr.Button("Submit")
+    
+    with gr.Row():
+        with gr.Column():
+            gr.Markdown("### Predicted prices for the next five business days")
+            table1 = gr.Dataframe(
+                headers=['Metric', 'Value'],
+                row_count=3,
+                col_count=2
+            )
         
-        with gr.Row():
-            gr.Markdown("""
-            ### Features:
-            - 5-day price predictions for NVDA
-            - Trading Strategy Generation 
-            - Interactive price charts
-            """)
-
-            gr.Markdown("""
-            ### Submitted by:
-            - Ishan Sharma
-            - Manav Goel
-            - Ritesh Singh
-            """)
-        
-        return demo
-
-demo = build_ui()
+        with gr.Column():
+            gr.Markdown("### Recommended Trading Strategy")
+            table2 = gr.Dataframe(
+                headers=['Date', 'Action'],
+                row_count=5,
+                col_count=2
+            )
+    
+    submit_btn.click(
+        fn=process_and_display,
+        inputs=[date_input],
+        outputs=[table1, table2]
+    )
 
 if __name__ == "__main__":
     demo.launch()
