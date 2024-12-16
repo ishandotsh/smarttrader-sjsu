@@ -28,7 +28,10 @@ def process_and_display(date):
     # print(strategy_df)
     strategy_df['Date'] = strategy_df['Date'].apply(lambda x: x.strftime('%m-%d-%Y'))
     strategy_df.set_index('Date', inplace=True)
-    return stats_df.values.tolist(), strategy_df.reset_index().values.tolist()
+    
+    predictions['Date'] = predictions['Date'].apply(lambda x: x.strftime('%m-%d-%Y'))
+    return stats_df.values.tolist(), strategy_df.reset_index().values.tolist(), predictions.round(2).values.tolist()[1:]
+
 
 # Create the Gradio interface
 with gr.Blocks(title="SmartTrader", css=df_css) as demo:
@@ -59,10 +62,19 @@ with gr.Blocks(title="SmartTrader", css=df_css) as demo:
                 col_count=2
             )
     
+    with gr.Row():
+        with gr.Column():
+            gr.Markdown("### Detailed Price Predictions")
+            table3 = gr.Dataframe(
+                headers=['Date', 'Open', 'High', 'Low', 'Close'],
+                row_count=5,
+                col_count=5
+            )
+    
     submit_btn.click(
         fn=process_and_display,
         inputs=[date_input],
-        outputs=[table1, table2]
+        outputs=[table1, table2, table3]
     )
 
 def main():
