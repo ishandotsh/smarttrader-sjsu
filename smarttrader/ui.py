@@ -65,5 +65,9 @@ with gr.Blocks(title="SmartTrader", css=df_css) as demo:
         outputs=[table1, table2]
     )
 
+def main():
+    demo.launch(server_name="0.0.0.0", server_port=8080)
+
+
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=10000)
+    main()    
