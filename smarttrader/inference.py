@@ -43,7 +43,7 @@ def load_model(model_path, config):
         num_layers=config['num_layers'],
         dim_feedforward=config['dim_feedforward']
     )
-    model.load_state_dict(torch.load(model_path, weights_only=False))
+    model.load_state_dict(torch.load(model_path, weights_only=False, map_location='cpu'))
     model.eval()
     return model
 
