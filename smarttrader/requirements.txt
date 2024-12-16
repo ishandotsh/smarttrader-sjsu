@@ -54,7 +54,6 @@ patsy==1.0.1
 peewee==3.17.8
 pillow==11.0.0
 plotly==5.24.1
-pmdarima==1.8.5
 pydantic==2.10.2
 pydantic_core==2.27.1
 pydub==0.25.1
